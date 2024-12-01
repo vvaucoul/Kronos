@@ -6,7 +6,7 @@
 /*   By: vvaucoul <vvaucoul@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/12 10:07:05 by vvaucoul          #+#    #+#             */
-/*   Updated: 2024/08/01 18:07:17 by vvaucoul         ###   ########.fr       */
+/*   Updated: 2024/10/26 12:12:31 by vvaucoul         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,26 +24,27 @@
 #include <system/fs/fd.h>
 
 // #define KERNEL_STACK_SIZE 0x1000 // 4KB - Kernel Stack === PAGE_SIZE
-#define INIT_PID 0x1             // First process pid created
+#define NEW_KERNEL_STACK_START 0xC0200000
+#define INIT_PID 0x1 // First process pid created
 
 // Each ticks, increase counter by ZOMBIE_HUNGRY, zombie will die after ZOMBIE_HUNGRY_DIE ticks
-#define ZOMBIE_HUNGRY 0x3      // Zombie hungry counter
+#define ZOMBIE_HUNGRY 0x3	   // Zombie hungry counter
 #define ZOMBIE_HUNGRY_DIE 0x10 // Zombie hungry die counter
 
 typedef enum e_task_state {
-    TASK_RUNNING,
-    TASK_SLEEPING,
-    TASK_WAITING,
-    TASK_STOPPED,
-    TASK_ZOMBIE,
-    TASK_ORPHAN,
+	TASK_RUNNING,
+	TASK_SLEEPING,
+	TASK_WAITING,
+	TASK_STOPPED,
+	TASK_ZOMBIE,
+	TASK_ORPHAN,
 } task_state_t;
 
 typedef enum e_task_priority {
-    TASK_PRIORITY_LOW,
-    TASK_PRIORITY_MEDIUM,
-    TASK_PRIORITY_HIGH,
-    TASK_PRIORITY_REALTIME,
+	TASK_PRIORITY_LOW,
+	TASK_PRIORITY_MEDIUM,
+	TASK_PRIORITY_HIGH,
+	TASK_PRIORITY_REALTIME,
 } task_priority_t;
 
 #ifndef _PID_T
@@ -57,72 +58,72 @@ typedef uint32_t uid_t;
 #endif
 
 typedef struct s_process_cpu_load {
-    uint64_t start_time;      // Time when the task started
-    uint64_t load_time;       // Time when the task was loaded and finished his task
-    uint64_t total_load_time; // Total time the task was loaded
+	uint64_t start_time;	  // Time when the task started
+	uint64_t load_time;		  // Time when the task was loaded and finished his task
+	uint64_t total_load_time; // Total time the task was loaded
 } process_cpu_load_t;
 
 typedef struct s_task {
-    pid_t pid;    // Process id
-    int32_t ppid; // Parent pid
+	pid_t pid;	  // Process id
+	int32_t ppid; // Parent pid
 
-    uid_t owner;           // Owner id (user id)
-    uid_t effective_owner; // Effective owner id (effective user id)
+	uid_t owner;		   // Owner id (user id)
+	uid_t effective_owner; // Effective owner id (effective user id)
 
-    uint32_t esp, ebp; // Stack and base pointer
-    uint32_t eip;      // Instruction pointer
+	uint32_t esp, ebp; // Stack and base pointer
+	uint32_t eip;	   // Instruction pointer
 
-    page_directory_t *page_directory; // Page directory
+	page_directory_t *page_directory; // Page directory
 
-    uint32_t kernel_stack;      // Kernel stack
-    struct s_task *next, *prev; // Next and previous task
+	uint32_t kernel_stack;		// Kernel stack
+	struct s_task *next, *prev; // Next and previous task
 
-    int32_t exit_code;
+	int32_t exit_code;
 
-    uint32_t wake_up_tick; // Wake up tick (Check task sleep)
+	uint32_t wake_up_tick; // Wake up tick (Check task sleep)
 
-    task_priority_t or_priority; // Task priority at creation
-    task_priority_t priority;    // Task priority runtime
+	task_priority_t or_priority; // Task priority at creation
+	task_priority_t priority;	 // Task priority runtime
 
-    task_state_t state;
+	task_state_t state;
 
-    process_cpu_load_t cpu_load; // CPU load (Check task cpu load)
+	process_cpu_load_t cpu_load; // CPU load (Check task cpu load)
 
-    signal_node_t *signal_queue; // Queue of signals to be processed
+	signal_node_t *signal_queue; // Queue of signals to be processed
 
-    penv_t env;           // Environment of the task (Task informations)
-    
-    fd_table_t *fd_table; // File descriptor table
-    
-    /*
-    **  Task ID
-    **
-    **  uid: User ID
-    **  gid: Group ID
-    **  euid: Effective User ID
-    **  egid: Effective Group ID
-    */
+	penv_t env; // Environment of the task (Task informations)
 
-    struct task_id_t {
-        uint32_t uid;  // User ID
-        uint32_t gid;  // Group ID
-        uint32_t euid; // Effective User ID
-        uint32_t egid; // Effective Group ID
-    } task_id;
+	fd_table_t *fd_table; // File descriptor table
+
+	/*
+	**  Task ID
+	**
+	**  uid: User ID
+	**  gid: Group ID
+	**  euid: Effective User ID
+	**  egid: Effective Group ID
+	*/
+
+	struct task_id_t {
+		uint32_t uid;  // User ID
+		uint32_t gid;  // Group ID
+		uint32_t euid; // Effective User ID
+		uint32_t egid; // Effective Group ID
+	} task_id;
 
 #define BSS_SIZE 0x1000
 #define DATA_SIZE 0x1000
 
-    struct sectors_t {
-        void *bss_segment;
-        uint32_t bss_size;
-        void *data_segment;
-        uint32_t data_size;
-    } sectors;
+	struct sectors_t {
+		void *bss_segment;
+		uint32_t bss_size;
+		void *data_segment;
+		uint32_t data_size;
+	} sectors;
 
-    int32_t zombie_hungry; // Counter for zombie process
+	int32_t zombie_hungry; // Counter for zombie process
 
-    thread_t *threads;
+	thread_t *threads;
 } task_t;
 
 void init_tasking(void);

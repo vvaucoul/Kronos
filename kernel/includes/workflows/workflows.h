@@ -6,7 +6,7 @@
 /*   By: vvaucoul <vvaucoul@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/28 13:38:18 by vvaucoul          #+#    #+#             */
-/*   Updated: 2024/08/02 10:51:36 by vvaucoul         ###   ########.fr       */
+/*   Updated: 2024/10/23 10:16:11 by vvaucoul         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,8 @@ extern int pmm_defragment_test(void);
 
 /* Kernel Heap */
 extern void kheap_test(void);
+extern int workflow_heap(void);
+
 extern void workflow_mmu(void);
 
 /* Interrupts test */

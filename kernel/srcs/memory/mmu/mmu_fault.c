@@ -6,7 +6,7 @@
 /*   By: vvaucoul <vvaucoul@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/17 14:59:44 by vvaucoul          #+#    #+#             */
-/*   Updated: 2024/10/22 23:16:44 by vvaucoul         ###   ########.fr       */
+/*   Updated: 2024/10/23 18:43:27 by vvaucoul         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -177,19 +177,25 @@ void mmu_page_fault_handler(struct regs *r) {
 
 	// Determine the cause of the fault
 	if (faulting_address == 0x0) {
+		qemu_printf("Page fault at NULL pointer\n");
 		__PANIC("Page fault at NULL pointer");
 	} else if (faulting_address >= KERNEL_SPACE_START) {
+		qemu_printf("Page fault at kernel address\n");
 		__PANIC("Page fault at kernel address");
 	} else if (reserved) {
+		qemu_printf("Page fault at reserved address\n");
 		__PANIC("Page fault at reserved address");
 	} else if (rw && !present) {
+		qemu_printf("Page fault trying to write to non-present page\n");
 		__PANIC("Page fault trying to write to non-present page");
 	} else if (!us && present) {
+		qemu_printf("Page fault trying to execute kernel code\n");
 		__PANIC("Page fault trying to execute kernel code");
 	} else if (rw && us && present) {
+		qemu_printf("Page fault trying to write to read-only page\n");
 		__PANIC("Page fault trying to write to read-only page");
 	} else {
+		qemu_printf("Page fault\n");
 		__PANIC("Page fault");
 	}
-	kpause();
 }

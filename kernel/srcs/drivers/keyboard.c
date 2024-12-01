@@ -6,7 +6,7 @@
 /*   By: vvaucoul <vvaucoul@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/22 13:56:07 by vvaucoul          #+#    #+#             */
-/*   Updated: 2024/10/20 17:06:49 by vvaucoul         ###   ########.fr       */
+/*   Updated: 2024/10/24 11:34:49 by vvaucoul         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ static const uint8_t kbdus[128] = {
 	'\t', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n', 0,
 	'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`', KEY_LEFTSHIFT,
 	'\\', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', KEY_RIGHTSHIFT,
-	'*', 0, ' ', KEY_CAPSLOCK, KEY_F2, KEY_F3, KEY_F4, KEY_F5, KEY_F6, KEY_F7, KEY_F8, KEY_F9, KEY_F10, 0, 0, '-',
+	'*', 0, ' ', KEY_CAPSLOCK, KEY_F2, KEY_F3, KEY_F4, KEY_F5, KEY_F6, KEY_F7, KEY_F8, KEY_F9, KEY_F10, KEY_F11, KEY_F12, '-',
 	0, 0, 0, '+', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 static const uint8_t kbdus_shift[128] = {
@@ -38,8 +38,8 @@ static const uint8_t kbdus_shift[128] = {
 	'(', ')', '_', '+', '\b',
 	'\t', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '\n', 0,
 	'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':', '"', '~', KEY_LEFTSHIFT,
-	'|', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?', KEY_RIGHTSHIFT,
-	'*', 0, ' ', KEY_CAPSLOCK, KEY_F2, KEY_F3, KEY_F4, KEY_F5, KEY_F6, KEY_F7, KEY_F8, KEY_F9, KEY_F10, 0, 0, '-',
+	'|', 'Z', 'X', 'C', 'V', 'B', 'N', '<', '>', '?', KEY_RIGHTSHIFT,
+	'*', 0, ' ', KEY_CAPSLOCK, KEY_F2, KEY_F3, KEY_F4, KEY_F5, KEY_F6, KEY_F7, KEY_F8, KEY_F9, KEY_F10, KEY_F11, KEY_F12, '-',
 	0, 0, 0, '+', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 /* fr-FR Keyboard Layout */
@@ -49,7 +49,7 @@ static const uint8_t kbdfr[128] = {
 	'\t', 'a', 'z', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '^', '$', '\n', 0,
 	'q', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 0xF9, '*', KEY_LEFTSHIFT,
 	'<', 'w', 'x', 'c', 'v', 'b', 'n', ',', ';', ':', '!', KEY_RIGHTSHIFT,
-	0, 0, ' ', KEY_CAPSLOCK, KEY_F2, KEY_F3, KEY_F4, KEY_F5, KEY_F6, KEY_F7, KEY_F8, KEY_F9, KEY_F10, 0, 0, '-',
+	0, 0, ' ', KEY_CAPSLOCK, KEY_F2, KEY_F3, KEY_F4, KEY_F5, KEY_F6, KEY_F7, KEY_F8, KEY_F9, KEY_F10, KEY_F11, KEY_F12, '-',
 	0, 0, 0, '+', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 static const uint8_t kbdfr_shift[128] = {
@@ -58,7 +58,7 @@ static const uint8_t kbdfr_shift[128] = {
 	'\t', 'A', 'Z', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', (uint8_t)0xA8, '*', '\n', 0,
 	'Q', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M', '%', (uint8_t)0xB5, KEY_LEFTSHIFT,
 	'>', 'W', 'X', 'C', 'V', 'B', 'N', '?', '.', '/', (uint8_t)0xA7, KEY_RIGHTSHIFT,
-	'*', 0, ' ', KEY_CAPSLOCK, KEY_F2, KEY_F3, KEY_F4, KEY_F5, KEY_F6, KEY_F7, KEY_F8, KEY_F9, KEY_F10, 0, 0, '-',
+	'*', 0, ' ', KEY_CAPSLOCK, KEY_F2, KEY_F3, KEY_F4, KEY_F5, KEY_F6, KEY_F7, KEY_F8, KEY_F9, KEY_F10, KEY_F11, KEY_F12, '-',
 	0, 0, 0, '+', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 static const uint8_t *get_keyboard_codes(void) {

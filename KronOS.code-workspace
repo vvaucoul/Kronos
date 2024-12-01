@@ -146,7 +146,9 @@
 			"cstdint": "c",
 			"math.h": "c",
 			"pool.h": "c",
-			"pagetable_pool.h": "c"
+			"pagetable_pool.h": "c",
+			"charon.h": "c",
+			"ps2_8042.h": "c"
 		},
 		"auto-scroll.enabled": true
 	}

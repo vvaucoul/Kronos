@@ -6,7 +6,7 @@
 /*   By: vvaucoul <vvaucoul@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/02 10:50:20 by vvaucoul          #+#    #+#             */
-/*   Updated: 2024/10/22 13:52:15 by vvaucoul         ###   ########.fr       */
+/*   Updated: 2024/10/22 23:59:29 by vvaucoul         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,40 +22,6 @@
 
 #include <assert.h>
 #include <string.h>
-
-int mmu_compare_page_directories(page_directory_t *dir1, page_directory_t *dir2) {
-	if (dir1 == dir2) return 1; // Same directory
-
-	int identical = 1; // Assume directories are identical initially
-
-	for (int i = 0; i < PAGE_ENTRIES; ++i) {
-		if (dir1->tables[i] && dir2->tables[i]) {
-			for (int j = 0; j < PAGE_ENTRIES; ++j) {
-				page_t *page1 = &dir1->tables[i]->pages[j];
-				page_t *page2 = &dir2->tables[i]->pages[j];
-
-				if (page1->present != page2->present ||
-					page1->rw != page2->rw ||
-					page1->user != page2->user ||
-					page1->accessed != page2->accessed ||
-					page1->dirty != page2->dirty ||
-					page1->frame != page2->frame) {
-					printk("Mismatch at table %d, page %d:\n", i, j);
-					printk("  Dir1 - present: %d, rw: %d, user: %d, accessed: %d, dirty: %d, frame: %u\n",
-						   page1->present, page1->rw, page1->user, page1->accessed, page1->dirty, page1->frame);
-					printk("  Dir2 - present: %d, rw: %d, user: %d, accessed: %d, dirty: %d, frame: %u\n",
-						   page2->present, page2->rw, page2->user, page2->accessed, page2->dirty, page2->frame);
-					identical = 0;
-				}
-			}
-		} else if (dir1->tables[i] || dir2->tables[i]) {
-			printk("Mismatch at table %d: one table is NULL while the other is not\n", i);
-			identical = 0;
-		}
-	}
-
-	return identical;
-}
 
 // Helper function to simulate page fault handler
 void simulate_page_fault(uint32_t address) {

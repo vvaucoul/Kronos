@@ -6,7 +6,7 @@
 /*   By: vvaucoul <vvaucoul@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/10 19:02:46 by vvaucoul          #+#    #+#             */
-/*   Updated: 2024/10/21 15:02:55 by vvaucoul         ###   ########.fr       */
+/*   Updated: 2024/10/27 10:19:13 by vvaucoul         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,8 @@
 static multiboot_info_t *multiboot_info = NULL;
 extern uint32_t initial_esp;
 extern uint32_t *kernel_stack;
+
+static void init_memory_map(void);
 
 /**
  * @brief Checks if the magic number is valid for multiboot.
@@ -133,6 +135,8 @@ int multiboot_init(uint32_t magic_number, uint32_t addr, uint32_t *kernel_stack)
 		__WARND("Failed to initialize kernel stack", 1);
 	}
 
+	init_memory_map();
+
 	return (0);
 }
 
@@ -205,4 +209,55 @@ uint32_t multiboot_get_mem_lower(void) {
  */
 uint32_t multiboot_get_mem_upper(void) {
 	return (multiboot_info->mem_upper);
+}
+
+/**
+ * @brief Retrieves the total available memory from the multiboot information.
+ *
+ * This function calculates the total available memory by summing the lower and upper memory
+ * values obtained from the multiboot information.
+ *
+ * @return The total available memory in bytes.
+ */
+uint32_t multiboot_get_available_memory(void) {
+	return (multiboot_get_mem_lower() + multiboot_get_mem_upper()) * 1024;
+}
+
+/**
+ * @brief Initializes the memory map by reading the multiboot information structure.
+ *
+ * This function retrieves the multiboot information structure and checks if the memory map
+ * is provided by the bootloader. If the memory map is available, it iterates through the
+ * memory map entries and prints the available memory regions using the printk function.
+ *
+ * @note This function assumes that the multiboot information structure is already populated
+ *       and accessible via the get_multiboot_info function.
+ *
+ * @details The memory map entries are processed to identify available memory regions. Each
+ *          available memory region is printed in the format "Available Memory: start - end".
+ *          The memory addresses are adjusted by adding the KERNEL_VIRTUAL_BASE to the
+ *          physical addresses provided by the bootloader.
+ *
+ * @return void
+ */
+static void init_memory_map(void) {
+	multiboot_info_t *mb_info = get_multiboot_info();
+
+	if (!(mb_info->flags & MULTIBOOT_FLAG_MMAP)) {
+		printk("Memory map not provided by bootloader\n");
+		return;
+	}
+
+	uintptr_t mmap_addr = (uintptr_t)mb_info->mmap_addr + KERNEL_VIRTUAL_BASE;
+	uintptr_t mmap_end = mmap_addr + mb_info->mmap_length;
+	multiboot_mmap_entry_t *mmap = (multiboot_mmap_entry_t *)mmap_addr;
+
+	while ((uintptr_t)mmap < mmap_end) {
+
+		if (mmap->type == MULTIBOOT_MEMORY_AVAILABLE) {
+			printk("Available Memory: 0x%llx - 0x%llx\n", mmap->addr, mmap->addr + mmap->len);
+		}
+
+		mmap = (multiboot_mmap_entry_t *)((uintptr_t)mmap + mmap->size + sizeof(mmap->size));
+	}
 }

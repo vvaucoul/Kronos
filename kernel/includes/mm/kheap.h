@@ -6,7 +6,7 @@
 /*   By: vvaucoul <vvaucoul@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/17 14:11:56 by vvaucoul          #+#    #+#             */
-/*   Updated: 2024/10/22 22:58:46 by vvaucoul         ###   ########.fr       */
+/*   Updated: 2024/10/27 10:26:35 by vvaucoul         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,9 +26,7 @@
 #define HEAP_MAX_SIZE (0x40000000 - HEAP_START_OFFSET)		 // Maximum heap size: 1 GB
 #define HEAP_PAGE_COUNT (HEAP_INITIAL_SIZE / PAGE_SIZE)
 
-#define KERNEL_PAGE_DIR_INDEX 768 // (0x1000 * 1024) // 0x30000000 / 0x1000 / 1024
-
-#define ALIGNMENT 0x100 // Desired alignment
+#define ALIGNMENT 0x1000 // Desired alignment
 
 /* Magic Number for Heap Block Integrity */
 #define HEAP_BLOCK_MAGIC 0xDEADBEEF
@@ -50,7 +48,6 @@ typedef struct heap {
 	page_directory_t *dir; // Page directory
 } heap_t;
 
-// void create_heap(uint32_t start, uint32_t initial_size, uint32_t max_size);
 void initialize_heap(page_directory_t *dir);
 void list_heap_blocks(void);
 
@@ -71,12 +68,5 @@ void *vcalloc(size_t num, size_t size);
 void *vrealloc(void *p, size_t size);
 
 size_t vsize(void *p);
-
-// bool heap_predicate(data_t a, data_t b);
-// heap_array_t heap_array_create(void *addr, uint32_t max_size, heap_node_predicate_t predicate);
-// void heap_array_insert_element(data_t data, heap_array_t *array);
-// data_t heap_array_get_element(uint32_t index, heap_array_t *array);
-// void heap_array_remove_element(uint32_t index, heap_array_t *array);
-// void heap_destroy(heap_array_t *array);
 
 #endif /* !KHEAP_H */

@@ -6,7 +6,7 @@
 /*   By: vvaucoul <vvaucoul@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/12 10:13:19 by vvaucoul          #+#    #+#             */
-/*   Updated: 2024/10/22 23:15:37 by vvaucoul         ###   ########.fr       */
+/*   Updated: 2024/10/26 12:14:58 by vvaucoul         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 #include <system/tss.h>
 
 #include <system/pit.h>
+#include <system/serial.h>
 #include <system/time.h>
 
 #include <asm/asm.h>
@@ -37,62 +38,60 @@ task_t *waiting_queue;
 extern uint32_t read_eip(void);
 
 extern uint32_t initial_esp;
+extern uint32_t *kernel_stack;
 
 // static int32_t next_pid = 1;
 
 static void move_stack(void *new_stack_start, uint32_t size) {
-	uint32_t i, pd_addr, old_stack_pointer, old_base_pointer, new_stack_pointer, new_base_pointer, offset, tmp, *tmp2;
+	uint32_t i, pd_addr;
+	uint32_t old_stack_pointer, old_base_pointer;
+	uint32_t new_stack_pointer, new_base_pointer, offset, tmp, *tmp2;
 
-	/* Allocate some space for the new stack */
-	for (i = (uint32_t)new_stack_start; i >= ((uint32_t)new_stack_start - size); i -= PAGE_SIZE) {
-		/* General-purpose stack is in user-mode */
+	// Aligner new_stack_start sur une page (corrigé)
+	uint32_t aligned_new_stack_start = (uint32_t)new_stack_start & ~PAGE_MASK;
+
+	// Allouer de l'espace pour la nouvelle pile
+	for (i = aligned_new_stack_start; i >= aligned_new_stack_start - size; i -= PAGE_SIZE) {
 		const page_t *page = mmu_get_page(i, mmu_get_current_directory());
 		if (!page) {
 			page = mmu_create_page(i, mmu_get_current_directory(), 1);
 		}
-		allocate_frame((page_t *)page, 0, 1);
+		allocate_frame((page_t *)page, 0, PAGE_PRESENT | PAGE_RW);
 	}
 
-	/* Flush the TLB by reading and writing the page directory address again */
-	__asm__ __volatile__("mov %%cr3, %0"
-						 : "=r"(pd_addr));
-	__asm__ __volatile__("mov %0, %%cr3"
-						 :
-						 : "r"(pd_addr));
+	// Vider le TLB
+	__asm__ __volatile__("mov %%cr3, %0" : "=r"(pd_addr));
+	__asm__ __volatile__("mov %0, %%cr3" : : "r"(pd_addr));
 
-	/* Old ESP and EBP, read from registers */
-	__asm__ __volatile__("mov %%esp, %0"
-						 : "=r"(old_stack_pointer));
-	__asm__ __volatile__("mov %%ebp, %0"
-						 : "=r"(old_base_pointer));
+	// Lire les anciens ESP et EBP
+	__asm__ __volatile__("mov %%esp, %0" : "=r"(old_stack_pointer));
+	__asm__ __volatile__("mov %%ebp, %0" : "=r"(old_base_pointer));
 
-	/* Offset to add to old stack addresses to get a new stack address */
-	offset = (uint32_t)new_stack_start - initial_esp;
+	// Calculer l'offset
+	offset = aligned_new_stack_start - old_stack_pointer;
 
-	/* New ESP and EBP */
+	// Calculer les nouveaux ESP et EBP
 	new_stack_pointer = old_stack_pointer + offset;
 	new_base_pointer = old_base_pointer + offset;
 
-	/* Copy the stack */
-	memcpy((void *)new_stack_pointer, (void *)old_stack_pointer, initial_esp - old_stack_pointer);
+	// Copier la pile
+	memcpy((void *)new_stack_pointer, (void *)old_stack_pointer, size);
 
-	/* Backtrace through the original stack, copying new values into the new stack */
-	for (i = (uint32_t)new_stack_start; i > (uint32_t)new_stack_start - size; i -= 4) {
+	// Ajuster les pointeurs dans la pile
+	for (i = aligned_new_stack_start; i > aligned_new_stack_start - size; i -= 4) {
 		tmp = *(uint32_t *)i;
-		if ((old_stack_pointer < tmp) && (tmp < initial_esp)) {
-			tmp = tmp + offset;
+		if ((old_stack_pointer < tmp) && (tmp < old_stack_pointer + size)) {
+			tmp += offset;
 			tmp2 = (uint32_t *)i;
 			*tmp2 = tmp;
 		}
 	}
 
-	/* Change stacks */
-	__asm__ __volatile__("mov %0, %%esp"
-						 :
-						 : "r"(new_stack_pointer));
-	__asm__ __volatile__("mov %0, %%ebp"
-						 :
-						 : "r"(new_base_pointer));
+	// Changer les registres ESP et EBP
+	__asm__ __volatile__("mov %0, %%esp" : : "r"(new_stack_pointer));
+	__asm__ __volatile__("mov %0, %%ebp" : : "r"(new_base_pointer));
+
+	qemu_printf("Moved stack to 0x%x\n", new_stack_pointer);
 }
 
 static void __process_sectors(task_t *process) {
@@ -114,10 +113,19 @@ void init_tasking(void) {
 	// printk("\n\n--- INIT TASKING ---\n\n");
 
 	ASM_CLI();
+	uint32_t esp;
+	GET_ESP(esp);
+	qemu_printf("Kernel stack: 0x%x\n", esp);
 
 	// printk("\t- Move stack\n");
-	move_stack((void *)0xDEADBEEF, KERNEL_STACK_SIZE);
+	// move_stack((void *)0xDEADBEEF, KERNEL_STACK_SIZE);
+	move_stack((void *)NEW_KERNEL_STACK_START, KERNEL_STACK_SIZE);
+	// move_stack((void *)0xC0200000, KERNEL_STACK_SIZE);
 
+	GET_ESP(esp);
+	qemu_printf("New kernel stack: 0x%x\n", esp);
+
+	// kpause();
 	__ready_queue_init();
 
 	/* Initialise the first task (kernel task) */
@@ -259,6 +267,10 @@ void set_task_egid(task_t *task, uint32_t egid) {
 }
 
 pid_t getpid(void) {
+	// Todo: Fix MMU clone directory
+	if (current_task == NULL) {
+		return (-1);
+	}
 	return current_task->pid;
 }
 

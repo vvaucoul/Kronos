@@ -6,7 +6,7 @@
 /*   By: vvaucoul <vvaucoul@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/04 13:28:32 by vvaucoul          #+#    #+#             */
-/*   Updated: 2024/07/29 12:24:12 by vvaucoul         ###   ########.fr       */
+/*   Updated: 2024/10/26 22:01:29 by vvaucoul         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,13 @@
 
 // Magic number for Multiboot 1
 #define MULTIBOOT_BOOTLOADER_MAGIC 0x2BADB002
+
+// Multiboot memory map entry types
+#define MULTIBOOT_MEMORY_AVAILABLE 1		// Available memory
+#define MULTIBOOT_MEMORY_RESERVED 2			// Reserved memory
+#define MULTIBOOT_MEMORY_ACPI_RECLAIMABLE 3 // ACPI reclaimable memory
+#define MULTIBOOT_MEMORY_NVS 4				// NVS memory
+#define MULTIBOOT_MEMORY_BADRAM 5			// Bad RAM
 
 // Multiboot header flags
 #define MULTIBOOT_FLAG_MEM 0x001
@@ -109,9 +116,9 @@ extern const char *multiboot_get_cmdline(void);
 extern const char *multiboot_get_device_name(void);
 extern uint32_t multiboot_get_mem_lower(void);
 extern uint32_t multiboot_get_mem_upper(void);
+extern uint32_t multiboot_get_available_memory(void);
 
 extern void print_multiboot_info(void);
 extern void print_memory_map(void);
-extern void print_kernel_sections(void);
 
 #endif /* !MULTIBOOT_H */

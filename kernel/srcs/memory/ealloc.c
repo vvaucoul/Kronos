@@ -6,7 +6,7 @@
 /*   By: vvaucoul <vvaucoul@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/31 18:09:05 by vvaucoul          #+#    #+#             */
-/*   Updated: 2024/10/21 15:38:06 by vvaucoul         ###   ########.fr       */
+/*   Updated: 2024/10/27 10:24:01 by vvaucoul         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,8 +16,37 @@
 #include <stddef.h>
 #include <string.h>
 
+#include <system/serial.h>
+
 // Initial placement address, typically set to the end of the kernel section
-static uint32_t placement_addr = (uint32_t)(&_kernel_end) - KERNEL_VIRTUAL_BASE;
+static uint32_t placement_addr = ((uint32_t)(&_kernel_end) - KERNEL_VIRTUAL_BASE);
+
+static void *ealloc_internal(uint32_t size, uint32_t align_size, uint32_t *phys_addr) {
+	// Align the placement address if necessary
+	if (align_size && (placement_addr & (align_size - 1))) {
+		placement_addr = (placement_addr + align_size) & ~(align_size - 1);
+	}
+
+	uint32_t new_addr = placement_addr + size;
+
+	// Check for overflow
+	if (new_addr < placement_addr) {
+		return NULL;
+	}
+
+	// Store the physical address if requested
+	if (phys_addr) {
+		*phys_addr = placement_addr;
+	}
+
+	// Convert the physical address to a virtual address
+	void *addr = (void *)(uintptr_t)(placement_addr + KERNEL_VIRTUAL_BASE);
+
+	// Update the placement address
+	placement_addr = new_addr;
+
+	return addr;
+}
 
 /**
  * @brief Allocates a block of memory of the given size.
@@ -26,21 +55,7 @@ static uint32_t placement_addr = (uint32_t)(&_kernel_end) - KERNEL_VIRTUAL_BASE;
  * @return A pointer to the allocated memory block, or NULL if the allocation fails.
  */
 void *ealloc(uint32_t size) {
-	if (size == 0) {
-		return NULL;
-	}
-	uint32_t new_addr = placement_addr + size;
-
-	// Check for overflow
-	if (new_addr < placement_addr) {
-		return NULL;
-	}
-
-	// Conversion de l'adresse physique en adresse virtuelle
-	void *addr = (void *)(placement_addr + KERNEL_VIRTUAL_BASE);
-
-	placement_addr = new_addr;
-	return addr;
+	return ealloc_internal(size, 0, NULL);
 }
 
 /**
@@ -51,24 +66,7 @@ void *ealloc(uint32_t size) {
  * @return A pointer to the allocated memory block, or NULL if the allocation fails.
  */
 void *ealloc_aligned(uint32_t size, uint32_t align_size) {
-	if (size == 0) {
-		return NULL;
-	}
-	if (align_size && (placement_addr & (align_size - 1))) {
-		placement_addr = (placement_addr + align_size) & ~(align_size - 1);
-	}
-	uint32_t new_addr = placement_addr + size;
-
-	// Check for overflow
-	if (new_addr < placement_addr) {
-		return NULL;
-	}
-
-	// Conversion de l'adresse physique en adresse virtuelle
-	void *addr = (void *)(placement_addr + KERNEL_VIRTUAL_BASE);
-
-	placement_addr = new_addr;
-	return addr;
+	return ealloc_internal(size, align_size, NULL);
 }
 
 /**
@@ -80,24 +78,7 @@ void *ealloc_aligned(uint32_t size, uint32_t align_size) {
  * @return A pointer to the allocated memory block, or NULL if the allocation fails.
  */
 void *ealloc_aligned_physic(uint32_t size, uint32_t align_size, uint32_t *phys) {
-	if (size == 0) {
-		if (phys) *phys = 0;
-		return NULL;
-	}
-	if (align_size && (placement_addr & (align_size - 1))) {
-		placement_addr = (placement_addr + align_size) & ~(align_size - 1);
-	}
-	uint32_t new_addr = placement_addr + size;
-
-	// Check for overflow
-	if (new_addr < placement_addr) {
-		return NULL;
-	}
-
-	void *addr = (void *)(placement_addr + KERNEL_VIRTUAL_BASE);
-	if (phys) *phys = placement_addr;
-	placement_addr = new_addr;
-	return addr;
+	return ealloc_internal(size, align_size, phys);
 }
 
 /**
@@ -107,14 +88,11 @@ void *ealloc_aligned_physic(uint32_t size, uint32_t align_size, uint32_t *phys) 
  * @return A pointer to the allocated memory block, or NULL if the allocation fails.
  */
 void *ecalloc(uint32_t size) {
-	if (size == 0) {
-		return NULL;
+	void *ptr = ealloc(size);
+	if (ptr) {
+		memset(ptr, 0, size);
 	}
-	void *addr = ealloc(size);
-	if (addr) {
-		memset(addr, 0, size);
-	}
-	return addr;
+	return ptr;
 }
 
 /**
@@ -125,10 +103,7 @@ void *ecalloc(uint32_t size) {
  * @param size The size of the data to insert.
  */
 void einsert(void *ptr, uint32_t addr, uint32_t size) {
-	if (!ptr || size == 0) {
-		return;
-	}
-	memcpy(ptr, (void *)addr, size);
+	memcpy(ptr, (void *)(addr + KERNEL_VIRTUAL_BASE), size);
 }
 
 /**

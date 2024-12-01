@@ -79,8 +79,8 @@ StartInHigherHalf:
     ; NOTE: From now on, paging should be enabled. The first 4MB of physical address space is
     ; mapped starting at KERNEL_VIRTUAL_BASE. Everything is linked to this address, so no more
     ; position-independent code or funny business with virtual-to-physical address translation
-    ; should be necessary. We now have a higher-half kernel.
-    mov esp, stack+STACKSIZE           ; set up the stack
+    ; should be necessary.
+    mov esp, stack + STACKSIZE           ; set up the stack
 
 	; push kernel stack
 	lea ecx, [esp]                        ; Load current stack pointer address into ECX

@@ -6,7 +6,7 @@
 /*   By: vvaucoul <vvaucoul@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/22 13:55:07 by vvaucoul          #+#    #+#             */
-/*   Updated: 2024/10/22 23:19:41 by vvaucoul         ###   ########.fr       */
+/*   Updated: 2024/10/27 10:49:08 by vvaucoul         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,8 @@
 #include <drivers/device/ide.h>
 #include <drivers/display.h>
 #include <drivers/keyboard.h>
+#include <drivers/ps2/PS2_8042.h>
+#include <drivers/usb.h>
 
 #include <multiboot/multiboot.h>
 #include <multiboot/multiboot_mmap.h>
@@ -211,6 +213,11 @@ static int init_system_components(void) {
 		get_cpu_topology();
 		kernel_log_info("LOG", "CPU TOPOLOGY");
 	}
+	// ps2_init();
+	// kernel_log_info("LOG", "PS2");
+
+	usb_init();
+	kernel_log_info("LOG", "USB");
 
 	keyboard_install();
 	kernel_log_info("LOG", "KEYBOARD");
@@ -235,8 +242,8 @@ static int init_multitasking(void) {
 	init_tasking();
 	kernel_log_info("LOG", "TASKING");
 
-	thread_init();
-	kernel_log_info("LOG", "THREADS");
+	// thread_init();
+	// kernel_log_info("LOG", "THREADS");
 	return (0);
 }
 
@@ -418,8 +425,13 @@ static int init_kernel(uint32_t magic_number, uint32_t addr, uint32_t *kstack) {
 	init_signals();
 	kernel_log_info("LOG", "SIGNALS");
 
+	// ksleep(1);
+	// usb_test_write_and_read();
+
 	init_filesystems(initrd_location, initrd_end);
-	init_multitasking();
+
+	// Todo: Fix MMU clone directory
+	// init_multitasking();
 
 	return (0);
 }
@@ -504,6 +516,11 @@ int kmain(uint32_t magic_number, uint32_t addr, uint32_t *kstack) {
 
 	// kpause();
 
+	kronos_shell();
+
+	while (1) {
+	}
+	// Todo: Fix MMU clone directory
 	pid_t pid = fork();
 	if (pid == 0) {
 		// Todo: Must enter in user space instead of using kernel space

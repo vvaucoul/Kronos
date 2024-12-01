@@ -6,7 +6,7 @@
 /*   By: vvaucoul <vvaucoul@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/05 01:12:55 by vvaucoul          #+#    #+#             */
-/*   Updated: 2024/07/31 11:34:17 by vvaucoul         ###   ########.fr       */
+/*   Updated: 2024/10/26 22:01:34 by vvaucoul         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,7 +91,6 @@ void __ksh_init_builtins(void) {
 	// __add_builtin((char *[__BUILTINS_MAX_NAMES]){"gdt-test", ""}, &gdt_test);
 	__add_builtin((char *[__BUILTINS_MAX_NAMES]){"time", ""}, &pit_display_phase);
 	__add_builtin((char *[__BUILTINS_MAX_NAMES]){"mboot", "multiboot", ""}, &print_multiboot_info);
-	__add_builtin((char *[__BUILTINS_MAX_NAMES]){"sections", ""}, &print_kernel_sections);
 	__add_builtin((char *[__BUILTINS_MAX_NAMES]){"help", ""}, &__ksh_help);
 	__add_builtin((char *[__BUILTINS_MAX_NAMES]){"kmmap", ""}, &print_memory_map);
 	__add_builtin((char *[__BUILTINS_MAX_NAMES]){"setxkbmap", ""}, &setxkbmap);

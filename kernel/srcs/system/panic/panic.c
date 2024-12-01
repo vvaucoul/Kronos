@@ -6,7 +6,7 @@
 /*   By: vvaucoul <vvaucoul@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/09 12:27:28 by vvaucoul          #+#    #+#             */
-/*   Updated: 2024/10/22 23:18:45 by vvaucoul         ###   ########.fr       */
+/*   Updated: 2024/10/24 11:06:32 by vvaucoul         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 bool __panic_handler = false;
 
 #if defined(__i386__)
-static void __dump_registers(void) {
+static void __attribute__((unused)) __dump_registers(void) {
 	uint32_t eax, ebx, ecx, edx, esi, edi, ebp, esp, eip;
 
 	__asm__ volatile("movl %%eax, %0" : "=r"(eax));
@@ -121,19 +121,19 @@ void __attribute__((no_caller_saved_registers)) kernel_panic_interrupt(const cha
 	switch (fault) {
 		case ABORT:
 			__DISPLAY_HEADER__();
-			printk(_RED "%s " _END "[" _RED "%u" _END "] [" _RED "%u" _END "]\n" _END, str, index, code);
+			printk(_RED "%s " _END "[" _RED "%ld" _END "] [" _RED "%ld" _END "]\n" _END, str, index, code);
 			break;
 		case FAULT:
 			__DISPLAY_HEADER_FAULT__();
-			printk(_END "%s " _END "[" _RED "%u" _END "] [" _RED "%u" _END "]\n" _END, str, index, code);
+			printk(_END "%s " _END "[" _RED "%ld" _END "] [" _RED "%ld" _END "]\n" _END, str, index, code);
 			break;
 		case TRAP:
 			__DISPLAY_HEADER_TRAP__();
-			printk(_CYAN "%s " _END "[" _RED "%u" _END "] [" _RED "%u" _END "]\n" _END, str, index, code);
+			printk(_CYAN "%s " _END "[" _RED "%ld" _END "] [" _RED "%ld" _END "]\n" _END, str, index, code);
 			break;
 		case INTERRUPT:
 			__DISPLAY_HEADER_INTERRUPT__();
-			printk(_YELLOW "%s " _END "[" _RED "%u" _END "] [" _RED "%u" _END "]\n" _END, str, index, code);
+			printk(_YELLOW "%s " _END "[" _RED "%ld" _END "] [" _RED "%ld" _END "]\n" _END, str, index, code);
 			break;
 	}
 	__PANIC_LOOP_HANDLER__();
